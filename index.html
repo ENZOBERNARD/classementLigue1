@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f5ef">
+  <title>Le classement — Ligue 1</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f6f5ef;
+      --ink: #20251f;
+      --muted: #777b72;
+      --line: #e2e2d9;
+      --green: #286342;
+      --green-soft: #e3eee5;
+      --green-muted: #a9c7b2;
+      --orange: #e65f3f;
+      --orange-soft: #f8e7df;
+      --gray: #eceae3;
+      --gray-text: #8f928d;
+      --white: #fff;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); }
+    .page { max-width: 900px; margin: 0 auto; padding: 34px 24px 64px; }
+    .topline { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .brand-mark { width: 12px; height: 12px; border-radius: 50%; background: var(--orange); box-shadow: 6px 0 0 var(--green); margin-right: 6px; }
+    .season { color: var(--muted); font-size: 12px; font-weight: 700; }
+    h1 { margin: 34px 0 5px; font-family: Georgia, "Times New Roman", serif; font-size: clamp(38px, 8vw, 58px); font-weight: 500; letter-spacing: 0; line-height: .98; }
+    .intro { margin: 12px 0 26px; color: var(--muted); font-size: 14px; }
+    .leaderboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .player-card { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto; align-items: end; row-gap: 4px; position: relative; min-height: 118px; padding: 17px 18px; border: 1px solid var(--line); border-radius: 6px; background: var(--white); text-align: left; color: inherit; cursor: pointer; font: inherit; transition: border-color .16s ease, transform .16s ease; }
+    .player-card:hover { transform: translateY(-2px); }
+    .player-card[aria-pressed="true"] { border: 2px solid var(--green); padding: 16px 17px; }
+    .player-card[aria-pressed="true"]::after { content: ""; position: absolute; top: 0; right: 0; border-top: 20px solid var(--green); border-left: 20px solid transparent; }
+    .player-card:focus-visible, .general-button:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+    .place { grid-column: 1 / -1; align-self: start; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .player-name { display: block; min-width: 0; margin-top: 11px; font-family: Georgia, "Times New Roman", serif; font-size: 22px; }
+    .score { position: static; justify-self: start; font-size: 23px; font-weight: 800; text-align: left; }
+    .score small { display: inline; margin-left: 4px; color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .08em; text-align: left; text-transform: uppercase; }
+    .notice { display: none; margin: 18px 0 0; padding: 11px 13px; border-left: 3px solid var(--orange); background: var(--orange-soft); color: #673521; font-size: 12px; line-height: 1.5; }
+    .notice.visible { display: block; }
+    .view-nav { margin-top: 13px; }
+    .general-button { padding: 8px 12px; border: 1px solid var(--line); border-radius: 5px; background: var(--white); color: var(--ink); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .general-button[aria-pressed="true"] { border-color: var(--green); background: var(--green-soft); color: var(--green); }
+    [hidden] { display: none !important; }
+    .section-head { display: flex; justify-content: space-between; align-items: end; gap: 12px; margin: 34px 0 12px; }
+    h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 25px; font-weight: 500; }
+    .rule { color: var(--muted); font-size: 11px; text-align: right; }
+    .table-head, .team-row { display: grid; align-items: center; column-gap: 9px; }
+    .general-head, .general-row { grid-template-columns: 44px minmax(0, 1fr) repeat(3, 48px); }
+    .player-head, .player-row { grid-template-columns: 44px minmax(0, 1fr) 56px 48px; }
+    .table-head { padding: 9px 12px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+    .table-head span:not(:nth-child(2)) { text-align: center; }
+    .team-list { overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: var(--white); }
+    .team-row { min-height: 52px; padding: 0 12px; border-top: 1px solid #efefe9; animation: arrive .32s both; }
+    .team-row:first-child { border-top: 0; }
+    .rank { display: inline-grid; justify-self: center; width: 28px; height: 28px; place-items: center; border-radius: 50%; background: #f0f0e9; font-size: 12px; font-weight: 800; }
+    .team-name { overflow: hidden; font-size: 13px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+    .points { justify-self: center; min-width: 34px; padding: 5px 6px; border-radius: 4px; background: var(--gray); color: var(--gray-text); font-size: 12px; font-weight: 800; text-align: center; }
+    .points.exact { background: var(--green); color: var(--white); }
+    .points.close { background: var(--green-soft); color: var(--green); }
+    .empty { padding: 26px 18px; color: var(--muted); font-size: 13px; line-height: 1.55; text-align: center; }
+    .foot { display: flex; justify-content: space-between; gap: 12px; margin-top: 13px; color: var(--muted); font-size: 11px; }
+    .foot strong { color: var(--ink); }
+    @keyframes arrive { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 560px) {
+      .page { padding: 22px 15px 38px; }
+      h1 { margin-top: 30px; }
+      .intro { margin-bottom: 20px; }
+      .leaderboard { gap: 7px; }
+      .player-card { min-height: 103px; padding: 13px 10px; }
+      .player-card[aria-pressed="true"] { padding: 12px 9px; }
+      .place { font-size: 9px; }
+      .player-name { margin-top: 10px; font-size: 18px; }
+      .score { font-size: 20px; }
+      .score small { font-size: 8px; }
+      .section-head { margin-top: 29px; }
+      h2 { font-size: 23px; }
+      .rule { max-width: 142px; font-size: 10px; }
+      .general-head, .general-row { grid-template-columns: 34px minmax(0, 1fr) repeat(3, 38px); }
+      .player-head, .player-row { grid-template-columns: 34px minmax(0, 1fr) 44px 38px; }
+      .table-head, .team-row { column-gap: 6px; }
+      .table-head { padding-right: 9px; padding-left: 9px; font-size: 8px; }
+      .team-row { min-height: 49px; padding: 0 9px; }
+      .team-name { font-size: 12px; }
+      .rank { width: 26px; height: 26px; }
+      .points { min-width: 34px; padding: 5px 4px; }
+      .player-head span:first-child, .player-row .rank { font-size: 10px; }
+      .foot { font-size: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topline">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span>Le classement</div>
+      <div class="season" id="season">LIGUE 1</div>
+    </div>
+    <h1>Le jeu des<br>pronostics.</h1>
+    <p class="intro">Le classement entre Thomas, Loic et Enzo.</p>
+
+    <section class="leaderboard" id="leaderboard" aria-label="Classement général des joueurs"></section>
+    <nav class="view-nav" aria-label="Choisir un classement">
+      <button class="general-button" id="general-button" type="button" aria-pressed="true">Classement général</button>
+    </nav>
+    <div class="notice" id="notice" role="status"></div>
+
+    <div class="section-head">
+      <h2 id="table-title">Classement général</h2>
+      <div class="rule" id="table-rule">2 pts rang exact&nbsp; · &nbsp;1 pt à ±1</div>
+    </div>
+    <div id="general-view">
+      <section class="team-list" id="general-list" aria-label="Points des joueurs par équipe"></section>
+      <div class="foot"><span><strong id="team-count">0</strong> équipes</span><span id="refresh-status">Chargement des résultats...</span></div>
+    </div>
+    <section class="team-list" id="player-view" aria-label="Classement pronostiqué" hidden></section>
+  </main>
+  <script>
+    const PLAYER_ORDER = ["Thomas", "Loic", "Enzo"];
+    const TEAM_ALIASES = {
+      "AJ Auxerre": "Auxerre",
+      "AS Monaco FC": "Monaco",
+      "Angers SCO": "Angers",
+      "ES Troyes AC": "Troyes",
+      "FC Lorient": "Lorient",
+      "Le Havre AC": "Le Havre",
+      "Le Mans FC": "Le Mans",
+      "Lille OSC": "Lille",
+      "OGC Nice": "Nice",
+      "Olympique Lyonnais": "Lyon",
+      "Olympique de Marseille": "Marseille",
+      "Paris Saint-Germain FC": "PSG",
+      "RC Strasbourg Alsace": "Strasbourg",
+      "Racing Club de Lens": "Lens",
+      "Stade Brestois 29": "Brest",
+      "Stade Rennais FC 1901": "Rennes",
+      "Toulouse FC": "Toulouse"
+    };
+    let appData;
+    let activeView = "general";
+    let liveStandingsLoaded = false;
+    let liveStandingsError = false;
+
+    const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (character) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[character]);
+
+    function getPoints(actual, predicted) {
+      if (!Number.isInteger(actual) || !Number.isInteger(predicted)) return null;
+      const difference = Math.abs(actual - predicted);
+      return difference === 0 ? 2 : difference === 1 ? 1 : 0;
+    }
+
+    function getPlayerPoints(player, team) {
+      return getPoints(team.currentPosition, player.predictions?.[team.name]);
+    }
+
+    function renderPoints(points) {
+      const pointClass = points === 2 ? "exact" : points === 1 ? "close" : "";
+      const label = points === null ? "Points non disponibles" : `${points} point${points > 1 ? "s" : ""}`;
+      return `<span class="points ${pointClass}" aria-label="${label}">${points ?? "–"}</span>`;
+    }
+
+    function buildStandings(matches) {
+      if (!Array.isArray(matches)) throw new Error("Format des résultats invalide");
+
+      const standings = new Map();
+      let completedMatches = 0;
+      let lastResultDate = "";
+      const dateParts = new Intl.DateTimeFormat("fr-FR", {
+        timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit"
+      }).formatToParts(new Date());
+      const today = `${dateParts.find((part) => part.type === "year").value}-${dateParts.find((part) => part.type === "month").value}-${dateParts.find((part) => part.type === "day").value}`;
+      const getTeam = (sourceName) => {
+        const name = TEAM_ALIASES[sourceName] || sourceName;
+        if (!standings.has(name)) standings.set(name, { name, points: 0, goalsFor: 0, goalsAgainst: 0 });
+        return standings.get(name);
+      };
+
+      matches.forEach((match) => {
+        if (typeof match.team1 !== "string" || typeof match.team2 !== "string") return;
+        const home = getTeam(match.team1);
+        const away = getTeam(match.team2);
+        const finalScore = Array.isArray(match.score) ? match.score : match.score?.ft;
+        if (!Array.isArray(finalScore) || finalScore.length !== 2 || !finalScore.every(Number.isInteger)) return;
+        if (Array.isArray(match.score) && match.date >= today) return;
+
+        const [homeGoals, awayGoals] = finalScore;
+        home.goalsFor += homeGoals;
+        home.goalsAgainst += awayGoals;
+        away.goalsFor += awayGoals;
+        away.goalsAgainst += homeGoals;
+        if (homeGoals > awayGoals) home.points += 3;
+        else if (homeGoals < awayGoals) away.points += 3;
+        else {
+          home.points += 1;
+          away.points += 1;
+        }
+        completedMatches += 1;
+        if (typeof match.date === "string" && match.date > lastResultDate) lastResultDate = match.date;
+      });
+
+      if (standings.size !== 18 || completedMatches === 0) {
+        throw new Error(`Classement incomplet : ${standings.size} équipes et ${completedMatches} matchs terminés`);
+      }
+
+      return {
+        teams: [...standings.values()]
+          .sort((a, b) =>
+            b.points - a.points ||
+            (b.goalsFor - b.goalsAgainst) - (a.goalsFor - a.goalsAgainst) ||
+            b.goalsFor - a.goalsFor ||
+            a.name.localeCompare(b.name, "fr")
+          )
+          .map((team, index) => ({ name: team.name, currentPosition: index + 1 })),
+        lastResultDate
+      };
+    }
+
+    async function refreshLiveStandings() {
+      const now = new Date();
+      const seasonStartYear = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
+      const nextYear = String((seasonStartYear + 1) % 100).padStart(2, "0");
+      const season = `${seasonStartYear}-${nextYear}`;
+      const url = `https://raw.githubusercontent.com/openfootball/football.json/master/${season}/fr.1.json`;
+      const response = await fetch(url, { cache: "no-store" });
+      if (!response.ok) throw new Error(`Source des résultats indisponible (${response.status})`);
+      const data = await response.json();
+      const { teams, lastResultDate } = buildStandings(data.matches);
+      appData.teams = teams;
+      liveStandingsLoaded = true;
+      const formattedDate = lastResultDate
+        ? new Date(`${lastResultDate}T12:00:00Z`).toLocaleDateString("fr-FR", {
+            day: "numeric", month: "long", year: "numeric", timeZone: "UTC"
+          })
+        : "date inconnue";
+      document.querySelector("#refresh-status").textContent = `OpenFootball · résultats au ${formattedDate}`;
+    }
+
+    function render() {
+      const players = PLAYER_ORDER.map((name) => appData.players.find((player) => player.name === name)).filter(Boolean);
+      const totals = players.map((player) => ({
+        player,
+        total: appData.teams.reduce((sum, team) => sum + (getPlayerPoints(player, team) ?? 0), 0)
+      })).sort((a, b) => b.total - a.total || PLAYER_ORDER.indexOf(a.player.name) - PLAYER_ORDER.indexOf(b.player.name));
+
+      document.querySelector("#season").textContent = appData.season || "LIGUE 1";
+      document.querySelector("#leaderboard").innerHTML = totals.map(({ player, total }, index) => `
+        <button class="player-card" type="button" data-player="${escapeHtml(player.name)}" aria-pressed="${activeView === player.name}">
+          <span class="place">${index + 1}${index === 0 ? "er" : "e"}</span>
+          <span class="player-name">${escapeHtml(player.name)}</span>
+          <span class="score">${total}<small>points</small></span>
+        </button>`).join("");
+      document.querySelectorAll(".player-card").forEach((button) => {
+        button.addEventListener("click", () => {
+          activeView = button.dataset.player;
+          render();
+        });
+      });
+      const generalButton = document.querySelector("#general-button");
+      generalButton.setAttribute("aria-pressed", String(activeView === "general"));
+      generalButton.onclick = () => {
+        activeView = "general";
+        render();
+      };
+
+      const teams = appData.teams.filter((team) => Number.isInteger(team.currentPosition))
+        .sort((a, b) => a.currentPosition - b.currentPosition);
+      const generalHead = `
+        <span>Actuel</span><span>Équipe</span>
+        ${players.map((player) => `<span>${escapeHtml(player.name)}</span>`).join("")}`;
+      document.querySelector("#team-count").textContent = appData.teams.length;
+      document.querySelector("#general-list").innerHTML = `<div class="table-head general-head" aria-hidden="true">${generalHead}</div>${teams.length ? teams.map((team, index) => `
+        <div class="team-row general-row" style="animation-delay:${Math.min(index, 12) * 18}ms">
+          <span class="rank">${team.currentPosition}</span>
+          <span class="team-name">${escapeHtml(team.name)}</span>
+          ${players.map((player) => renderPoints(getPlayerPoints(player, team))).join("")}
+        </div>`).join("") : `<div class="empty">Ajoute les 18 équipes et leur position actuelle dans <strong>data.json</strong> pour afficher le classement.</div>`}`;
+
+      const selectedPlayer = players.find((player) => player.name === activeView);
+      if (activeView !== "general" && !selectedPlayer) activeView = "general";
+      const generalView = activeView === "general";
+      document.querySelector("#general-view").hidden = !generalView;
+      document.querySelector("#player-view").hidden = generalView;
+      document.querySelector("#table-title").textContent = generalView ? "Classement général" : `Pronostics de ${selectedPlayer.name}`;
+      document.querySelector("#table-rule").textContent = generalView ? "2 pts rang exact · 1 pt à ±1" : `${totals.find(({ player }) => player.name === selectedPlayer.name)?.total ?? 0} pts au total`;
+      document.querySelector("#player-view").setAttribute("aria-label", generalView ? "Classement pronostiqué" : `Classement pronostiqué de ${selectedPlayer.name}`);
+      document.querySelector("#player-view").innerHTML = selectedPlayer ? (() => {
+        const player = selectedPlayer;
+        const rows = appData.teams.map((team) => ({
+          team,
+          predicted: player.predictions?.[team.name],
+          points: getPlayerPoints(player, team)
+        })).filter(({ predicted }) => Number.isInteger(predicted))
+          .sort((a, b) => a.predicted - b.predicted);
+        return `<div class="table-head player-head" aria-hidden="true">
+            <span>Prédit</span><span>Équipe</span><span style="text-align:center">Actuel</span><span style="text-align:center">Pts</span>
+          </div>
+          ${rows.length ? rows.map(({ team, predicted, points }, index) => `
+              <div class="team-row player-row" style="animation-delay:${Math.min(index, 12) * 18}ms">
+                <span class="rank">${predicted}</span>
+                <span class="team-name">${escapeHtml(team.name)}</span>
+                <span class="prediction">${Number.isInteger(team.currentPosition) ? team.currentPosition : "–"}</span>
+                ${renderPoints(points)}
+              </div>`).join("") : `<div class="empty">Aucun pronostic disponible.</div>`}`;
+      })() : `<div class="empty">Aucun pronostic disponible.</div>`;
+
+      const complete = appData.teams.length === 18 && appData.teams.every((team) => Number.isInteger(team.currentPosition)) && players.length === 3 && players.every((player) => appData.teams.every((team) => Number.isInteger(player.predictions?.[team.name])));
+      const notice = document.querySelector("#notice");
+      if (liveStandingsError) {
+        notice.textContent = "Actualisation indisponible : affichage des positions enregistrées dans data.json, qui peuvent être obsolètes.";
+        document.querySelector("#refresh-status").textContent = "Positions locales (non actualisées)";
+      } else if (!liveStandingsLoaded) {
+        notice.textContent = "Chargement du classement actuel de Ligue 1...";
+      } else if (!complete) {
+        notice.textContent = "Données incomplètes : vérifie les 18 équipes et les pronostics dans data.json.";
+      } else {
+        notice.textContent = "Classement complet · les points sont à jour.";
+      }
+      notice.classList.toggle("visible", liveStandingsError || !liveStandingsLoaded || !complete);
+    }
+
+    fetch("./data.json", { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) throw new Error("data.json introuvable");
+        return response.json();
+      })
+      .then((data) => {
+        if (!Array.isArray(data.teams) || !Array.isArray(data.players)) throw new Error("Format JSON invalide");
+        appData = data;
+        render();
+        refreshLiveStandings()
+          .then(render)
+          .catch((error) => {
+            console.error("Impossible d'actualiser le classement de Ligue 1.", error);
+            liveStandingsError = true;
+            render();
+          });
+      })
+      .catch((error) => {
+        console.error("Impossible de lire data.json.", error);
+        document.querySelector("#notice").textContent = "Impossible de lire data.json. Ouvre cette page via un serveur local et vérifie que le fichier JSON se trouve dans le même dossier.";
+        document.querySelector("#notice").classList.add("visible");
+        document.querySelector("#general-list").innerHTML = '<div class="empty">Les données du classement ne sont pas disponibles.</div>';
+      });
+  </script>
+</body>
+</html>

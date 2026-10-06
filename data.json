@@ -1,0 +1,52 @@
+{
+  "season": "LIGUE 1 · CLASSEMENT ACTUEL",
+  "teams": [
+    { "name": "Monaco", "currentPosition": 1 },
+    { "name": "Lyon", "currentPosition": 2 },
+    { "name": "Paris FC", "currentPosition": 3 },
+    { "name": "Lille", "currentPosition": 4 },
+    { "name": "Rennes", "currentPosition": 5 },
+    { "name": "PSG", "currentPosition": 6 },
+    { "name": "Angers", "currentPosition": 7 },
+    { "name": "Strasbourg", "currentPosition": 8 },
+    { "name": "Le Mans", "currentPosition": 9 },
+    { "name": "Auxerre", "currentPosition": 10 },
+    { "name": "Brest", "currentPosition": 11 },
+    { "name": "Lorient", "currentPosition": 12 },
+    { "name": "Toulouse", "currentPosition": 13 },
+    { "name": "Nice", "currentPosition": 14 },
+    { "name": "Lens", "currentPosition": 15 },
+    { "name": "Troyes", "currentPosition": 16 },
+    { "name": "Marseille", "currentPosition": 17 },
+    { "name": "Le Havre", "currentPosition": 18 }
+  ],
+  "players": [
+    {
+      "name": "Thomas",
+      "predictions": {
+        "PSG": 1, "Monaco": 2, "Lille": 3, "Lyon": 4, "Rennes": 5, "Paris FC": 6,
+        "Lens": 7, "Strasbourg": 8, "Marseille": 9, "Toulouse": 10, "Brest": 11,
+        "Angers": 12, "Nice": 13, "Troyes": 14, "Lorient": 15, "Le Mans": 16,
+        "Le Havre": 17, "Auxerre": 18
+      }
+    },
+    {
+      "name": "Loic",
+      "predictions": {
+        "PSG": 1, "Lyon": 2, "Lille": 3, "Lens": 4, "Monaco": 5, "Rennes": 6,
+        "Marseille": 7, "Paris FC": 8, "Strasbourg": 9, "Nice": 10, "Brest": 11,
+        "Toulouse": 12, "Le Mans": 13, "Angers": 14, "Le Havre": 15, "Lorient": 16,
+        "Auxerre": 17, "Troyes": 18
+      }
+    },
+    {
+      "name": "Enzo",
+      "predictions": {
+        "PSG": 1, "Rennes": 2, "Monaco": 3, "Lyon": 4, "Lens": 5, "Lille": 6,
+        "Paris FC": 7, "Marseille": 8, "Toulouse": 9, "Lorient": 10, "Strasbourg": 11,
+        "Le Havre": 12, "Brest": 13, "Nice": 14, "Troyes": 15, "Le Mans": 16,
+        "Auxerre": 17, "Angers": 18
+      }
+    }
+  ]
+}
